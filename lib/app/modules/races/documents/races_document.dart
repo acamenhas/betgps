@@ -18,6 +18,9 @@ const String racesByDay = """
       emotion {
         name
       }
+      stake {
+        name
+      }
       nrHorses
       pl
       plPercent
@@ -56,7 +59,7 @@ query q(\$date: date) {
 """;
 
 const String finishRace = """
-mutation MyMutation(\$id: uuid, \$pl: float8, \$pl_percent: float8, \$balance: float8, \$raceStatusId: uuid, \$updateDate: timestamp, \$operationalRating: float8, \$obs: String, \$emotionId: uuid) {
+mutation MyMutation(\$id: uuid, \$pl: float8, \$pl_percent: float8, \$balance: float8, \$raceStatusId: uuid, \$updateDate: timestamp, \$operationalRating: float8, \$obs: String, \$emotionId: uuid, \$stakeId: uuid) {
   update_betgps_race(where: {id: {_eq: \$id}}, _set: {
     pl: \$pl,
     plPercent: \$pl_percent,
@@ -65,7 +68,8 @@ mutation MyMutation(\$id: uuid, \$pl: float8, \$pl_percent: float8, \$balance: f
     obs: \$obs,
     raceStatusId: \$raceStatusId,
     updateDate: \$updateDate,
-    emotionId: \$emotionId
+    emotionId: \$emotionId,
+    stakeId: \$stakeId
     }) {
     affected_rows
   }

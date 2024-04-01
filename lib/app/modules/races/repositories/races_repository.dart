@@ -63,7 +63,8 @@ class RacesRepository extends Disposable {
       double balance,
       double operationalRating,
       String obs,
-      String emotionId) async {
+      String emotionId,
+      String stakeId) async {
     return await connect.mutation(finishRace, variables: {
       'id': raceId,
       'pl': pl,
@@ -72,6 +73,7 @@ class RacesRepository extends Disposable {
       'operationalRating': operationalRating,
       'obs': obs,
       'emotionId': emotionId,
+      'stakeId': stakeId,
       'raceStatusId': '146e9766-dfb7-4bd1-b78a-d64bcd597212',
       'updateDate': DateTime.now().toIso8601String()
     });

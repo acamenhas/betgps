@@ -17,6 +17,7 @@ class RaceModel implements IBaseModel {
   double? operationalRating;
   String? obs;
   String? emotion;
+  String? stake;
 
   RaceModel(
       {this.id,
@@ -34,7 +35,8 @@ class RaceModel implements IBaseModel {
       this.balance,
       this.operationalRating,
       this.obs,
-      this.emotion});
+      this.emotion,
+      this.stake});
 
   static List<RaceModel> fromJsonList(List list) {
     if (list == null) return [];
@@ -59,7 +61,9 @@ class RaceModel implements IBaseModel {
       'pl': pl,
       'plPercent': plPercent,
       'balance': balance,
-      'operationalRating': operationalRating
+      'operationalRating': operationalRating,
+      'emotion': emotion,
+      'stake': stake
     };
   }
 
@@ -84,6 +88,7 @@ class RaceModel implements IBaseModel {
         balance: map['balance'],
         operationalRating: map['operationalRating'],
         obs: map['obs'] ?? "",
-        emotion: map['emotion'] != null ? map['emotion']['name'] : "");
+        emotion: map['emotion'] != null ? map['emotion']['name'] : "",
+        stake: map['stake'] != null ? map['stake']['name'] : "");
   }
 }

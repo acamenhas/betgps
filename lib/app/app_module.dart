@@ -3,6 +3,8 @@ import 'package:betgps/app/modules/emotions/emotions_controller.dart';
 import 'package:betgps/app/modules/emotions/repositories/emotions_repository.dart';
 import 'package:betgps/app/modules/races/races_controller.dart';
 import 'package:betgps/app/modules/races/repositories/races_repository.dart';
+import 'package:betgps/app/modules/stakes/repositories/stakes_repository.dart';
+import 'package:betgps/app/modules/stakes/stakes_controller.dart';
 import 'package:betgps/app/shared/custom_hasura_connect.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:modular_triple_bind/modular_triple_bind.dart';
@@ -15,6 +17,8 @@ class AppModule extends Module {
         TripleBind.factory((i) => RacesController(i.get())),
         Bind.factory((i) => EmotionsRepository(i.get())),
         TripleBind.factory((i) => EmotionsController(i.get())),
+        Bind.factory((i) => StakesRepository(i.get())),
+        TripleBind.factory((i) => StakesController(i.get())),
       ];
 
   @override

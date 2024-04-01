@@ -44,9 +44,10 @@ class RacesController extends StreamStore<Exception, List<RaceModel>>
       double balance,
       double operationalRating,
       String obs,
-      String emotionId) async {
-    dynamic r = await racesRepository.finish(
-        raceId, pl, pl_percent, balance, operationalRating, obs, emotionId);
+      String emotionId,
+      String stakeId) async {
+    dynamic r = await racesRepository.finish(raceId, pl, pl_percent, balance,
+        operationalRating, obs, emotionId, stakeId);
     return true;
   }
 

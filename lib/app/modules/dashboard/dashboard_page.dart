@@ -3,6 +3,8 @@ import 'package:betgps/app/modules/emotions/emotions_controller.dart';
 import 'package:betgps/app/modules/emotions/models/emotion_model.dart';
 import 'package:betgps/app/modules/races/models/race_model.dart';
 import 'package:betgps/app/modules/races/races_controller.dart';
+import 'package:betgps/app/modules/stakes/models/stake_model.dart';
+import 'package:betgps/app/modules/stakes/stakes_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -19,6 +21,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final storeRaces = Modular.get<RacesController>();
   final storeEmotions = Modular.get<EmotionsController>();
+  final storeStakes = Modular.get<StakesController>();
 
   List<RaceModel> races = [];
   late Disposer _races;
@@ -26,7 +29,9 @@ class _DashboardPageState extends State<DashboardPage> {
   List<EmotionModel> emotions = [];
   late Disposer _emotions;
 
-  bool loading = true;
+  List<StakeModel> stakes = [];
+  late Disposer _stakes;
+
   String filterDate = "";
 
   int raceFilter = 0;
@@ -43,11 +48,13 @@ class _DashboardPageState extends State<DashboardPage> {
   double emotionalRating = 0;
 
   String emotionId = "";
+  String stakeId = "";
 
   @override
   void initState() {
     storeRaces.getAllByDay(DateTime.now().toIso8601String().substring(0, 10));
     storeEmotions.getAll();
+    storeStakes.getAll();
     btnsController.selectIndex(raceFilter);
 
     _races = storeRaces.observer(onState: (state) async {
@@ -74,10 +81,24 @@ class _DashboardPageState extends State<DashboardPage> {
       state.insert(0, EmotionModel(id: '', name: ''));
       setState(() {
         emotions = state;
-        loading = false;
+      });
+    });
+
+    _stakes = storeStakes.observer(onState: (state) {
+      state.insert(0, StakeModel(id: '', name: ''));
+      setState(() {
+        stakes = state;
       });
     });
     super.initState();
+  }
+
+  bool finishLoading() {
+    bool r = false;
+    if (emotions.isNotEmpty && stakes.isNotEmpty && races.isNotEmpty) {
+      r = true;
+    }
+    return r;
   }
 
   List<RaceModel> filterRaces() {
@@ -109,13 +130,14 @@ class _DashboardPageState extends State<DashboardPage> {
   void dispose() {
     _races();
     _emotions();
+    _stakes();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: loading
+        body: !finishLoading()
             ? const Center(child: CircularProgressIndicator())
             : Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -361,6 +383,15 @@ class _DashboardPageState extends State<DashboardPage> {
                                               const EdgeInsets.only(left: 8.0),
                                           child: Text(
                                               filterRaces()[index].emotion!),
+                                        )),
+                                    Visibility(
+                                        visible:
+                                            filterRaces()[index].stake != "",
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 8.0),
+                                          child:
+                                              Text(filterRaces()[index].stake!),
                                         ))
                                   ],
                                 ),
@@ -418,6 +449,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                               } else if (item == "pl") {
                                                 plController.text = "";
                                                 emotionId = "";
+                                                stakeId = "";
                                                 showDialog<String>(
                                                   context: context,
                                                   builder: (context) =>
@@ -437,7 +469,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 const InputDecoration(
                                                               border:
                                                                   OutlineInputBorder(),
-                                                              hintText:
+                                                              labelText:
                                                                   'Enter profit lost value',
                                                             ),
                                                           ),
@@ -491,7 +523,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                   const InputDecoration(
                                                                 border:
                                                                     OutlineInputBorder(),
-                                                                hintText:
+                                                                labelText:
                                                                     'Observations',
                                                               ),
                                                             ),
@@ -501,38 +533,83 @@ class _DashboardPageState extends State<DashboardPage> {
                                                                 const EdgeInsets
                                                                     .only(
                                                                     top: 12.0),
-                                                            child:
-                                                                DropdownButtonFormField<
-                                                                    String>(
-                                                              decoration:
-                                                                  const InputDecoration(
-                                                                labelText:
-                                                                    'Select your emotion',
-                                                                border:
-                                                                    OutlineInputBorder(),
-                                                              ),
-                                                              value: emotionId,
-                                                              onChanged: (String?
-                                                                  newValue) {
-                                                                setState(() {
-                                                                  emotionId =
-                                                                      newValue!;
-                                                                });
-                                                              },
-                                                              items: emotions.map<
-                                                                      DropdownMenuItem<
-                                                                          String>>(
-                                                                  (EmotionModel
-                                                                      value) {
-                                                                return DropdownMenuItem<
-                                                                    String>(
-                                                                  value:
-                                                                      value.id,
-                                                                  child: Text(
-                                                                      value
-                                                                          .name!),
-                                                                );
-                                                              }).toList(),
+                                                            child: Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  flex: 3,
+                                                                  child:
+                                                                      DropdownButtonFormField<
+                                                                          String>(
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                      labelText:
+                                                                          'Select your emotion',
+                                                                      border:
+                                                                          OutlineInputBorder(),
+                                                                    ),
+                                                                    value:
+                                                                        emotionId,
+                                                                    onChanged:
+                                                                        (String?
+                                                                            newValue) {
+                                                                      setState(
+                                                                          () {
+                                                                        emotionId =
+                                                                            newValue!;
+                                                                      });
+                                                                    },
+                                                                    items: emotions.map<
+                                                                        DropdownMenuItem<
+                                                                            String>>((EmotionModel
+                                                                        value) {
+                                                                      return DropdownMenuItem<
+                                                                          String>(
+                                                                        value: value
+                                                                            .id,
+                                                                        child: Text(
+                                                                            value.name!),
+                                                                      );
+                                                                    }).toList(),
+                                                                  ),
+                                                                ),
+                                                                Expanded(
+                                                                  flex: 2,
+                                                                  child:
+                                                                      DropdownButtonFormField<
+                                                                          String>(
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                      labelText:
+                                                                          'Select your stake',
+                                                                      border:
+                                                                          OutlineInputBorder(),
+                                                                    ),
+                                                                    value:
+                                                                        stakeId,
+                                                                    onChanged:
+                                                                        (String?
+                                                                            newValue) {
+                                                                      setState(
+                                                                          () {
+                                                                        stakeId =
+                                                                            newValue!;
+                                                                      });
+                                                                    },
+                                                                    items: stakes.map<
+                                                                        DropdownMenuItem<
+                                                                            String>>((StakeModel
+                                                                        value) {
+                                                                      return DropdownMenuItem<
+                                                                          String>(
+                                                                        value: value
+                                                                            .id,
+                                                                        child: Text(
+                                                                            value.name!),
+                                                                      );
+                                                                    }).toList(),
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           )
                                                         ],
@@ -597,7 +674,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                               operationRating,
                                                               obsController
                                                                   .text,
-                                                              emotionId);
+                                                              emotionId,
+                                                              stakeId);
 
                                                           Navigator.pop(
                                                               context, 'Save');
