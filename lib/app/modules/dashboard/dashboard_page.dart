@@ -43,6 +43,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final obsController = TextEditingController();
 
   String balance = "";
+  String todaysProfit = "";
 
   double operationRating = 0;
   double emotionalRating = 0;
@@ -50,30 +51,41 @@ class _DashboardPageState extends State<DashboardPage> {
   String emotionId = "";
   String stakeId = "";
 
+  double yesterdayBalance = 0;
+  double todayBalance = 0;
+
+  getYesterdayBalance() async {
+    yesterdayBalance = await storeRaces.getDaillyBalance(DateTime.now()
+        .subtract(const Duration(days: 1))
+        .toIso8601String()
+        .substring(0, 10));
+  }
+
   @override
   void initState() {
+    getYesterdayBalance();
     storeRaces.getAllByDay(DateTime.now().toIso8601String().substring(0, 10));
     storeEmotions.getAll();
     storeStakes.getAll();
     btnsController.selectIndex(raceFilter);
 
     _races = storeRaces.observer(onState: (state) async {
-      double _balance = 0;
       for (var s in state) {
-        if (s.balance! > 0) {
-          _balance = s.balance!;
+        if (s.balance! > todayBalance) {
+          todayBalance = s.balance!;
         }
       }
-      if (_balance == 0) {
-        _balance = await storeRaces.getDaillyBalance(DateTime.now()
-            .subtract(const Duration(days: 1))
-            .toIso8601String()
-            .substring(0, 10));
+
+      if (todayBalance == 0) {
+        todayBalance = yesterdayBalance;
       }
+
       setState(() {
         filterDate = DateTime.now().toIso8601String().substring(0, 10);
         races = state;
-        balance = "${_balance.toStringAsFixed(2)}€";
+        balance = "${todayBalance.toStringAsFixed(2)}€";
+        todaysProfit =
+            "${(((todayBalance / yesterdayBalance) - 1) * 100).toStringAsFixed(2)}%";
       });
     });
 
@@ -182,7 +194,16 @@ class _DashboardPageState extends State<DashboardPage> {
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                Text(balance)
+                                Row(
+                                  children: [
+                                    Text(balance),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(left: 10.0),
+                                      child: Text(todaysProfit),
+                                    )
+                                  ],
+                                ),
                               ],
                             ),
                             Padding(
